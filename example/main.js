@@ -132,9 +132,20 @@ class ExampleApp extends React.Component {
     this._handleHexagonClicked = this._handleHexagonClicked.bind(this);
 
     this._handlePointsLoaded = this._handlePointsLoaded.bind(this);
+    this._toggleLayerVisibility = this._toggleLayerVisibility.bind(this);
 
     this._renderOverlay = this._renderOverlay.bind(this);
     this._renderMap = this._renderMap.bind(this);
+    this._renderControl = this._renderControl.bind(this);
+    this._renderLayers = this._renderLayers.bind(this);
+
+    this.state = {
+      layers: {
+        grid: true,
+        choropleth: true,
+        scatterplot: true
+      }
+    };
   }
 
   componentWillMount() {
@@ -316,6 +327,33 @@ class ExampleApp extends React.Component {
     });
   }
 
+  _renderLayers(layers, type) {
+
+    if (!this.state.layers[type]) {
+      return layers;
+    }
+
+    switch (type) {
+      case 'grid':
+        layers.push(this._renderGridLayer());
+        break;
+
+      case 'choropleth':
+        layers.push(this._renderChoroplethLayer());
+        break;
+
+      case 'scatterplot':
+        layers.push(this._renderScatterplotLayer());
+        break;
+
+      default: {
+        break;
+      }
+    }
+
+    return layers;
+  }
+
   _renderOverlay() {
     const {choropleths, hexagons, points} = this.props;
 
@@ -328,13 +366,7 @@ class ExampleApp extends React.Component {
       <WebGLOverlay
         width={window.innerWidth}
         height={window.innerHeight}
-        layers={[
-          this._renderGridLayer(),
-          this._renderChoroplethLayer(),
-          // this._renderHexagonLayer(),
-          this._renderScatterplotLayer()
-          // this._renderArcLayer()
-        ]}
+        layers={ Object.keys(this.state.layers).reduce(this._renderLayers, []) }
       />
     );
   }
@@ -358,10 +390,39 @@ class ExampleApp extends React.Component {
     );
   }
 
+  _toggleLayerVisibility(layer) {
+    var currentLayers = this.state.layers;
+    currentLayers[layer] = !currentLayers[layer];
+    this.setState({layers: currentLayers});
+  }
+
+  _renderControl() {
+    return (
+      <ul style={{position: 'fixed', top: 0}}>
+        <li>Grid Layer &nbsp;
+          <button onClick={ this._toggleLayerVisibility.bind(this, 'grid') }>
+            {this.state.layers.grid ? 'hide' : 'show'}
+          </button>
+        </li>
+        <li>Choropleth Layer &nbsp;
+          <button onClick={ this._toggleLayerVisibility.bind(this, 'choropleth') }>
+            {this.state.layers.choropleth ? 'hide' : 'show'}
+          </button>
+        </li>
+        <li>Scatterplot Layer &nbsp;
+          <button onClick={ this._toggleLayerVisibility.bind(this, 'scatterplot') }>
+            {this.state.layers.scatterplot ? 'hide' : 'show'}
+          </button>
+        </li>
+      </ul>
+    );
+  }
+
   render() {
     return (
       <div>
         { this._renderMap() }
+        { this._renderControl() }
       </div>
     );
   }

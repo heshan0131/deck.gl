@@ -79,7 +79,8 @@ export default class GridLayer extends BaseMapLayer {
       ...this._uniforms,
       scale: new Float32Array([
         this.unitWidth - margin * 2, this.unitHeight - margin * 2, 1]),
-      maxCount: this.cache.maxCount
+      maxCount: this.cache.maxCount,
+      opacity: 0.8
     };
   }
 
