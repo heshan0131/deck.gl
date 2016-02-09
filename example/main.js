@@ -94,7 +94,8 @@ function reducer(state = INITIAL_STATE, action) {
           y: Number(coords[0]),
           z: 10
         },
-        color: [88, 9, 124]
+        color: [88, 9, 124],
+        radius: Math.random() * 5 + 2
       };
     });
 
@@ -329,8 +330,8 @@ class ExampleApp extends React.Component {
         width={window.innerWidth}
         height={window.innerHeight}
         layers={[
-          this._renderGridLayer(),
-          this._renderChoroplethLayer(),
+          // this._renderGridLayer(),
+          // this._renderChoroplethLayer(),
           // this._renderHexagonLayer(),
           this._renderScatterplotLayer()
           // this._renderArcLayer()

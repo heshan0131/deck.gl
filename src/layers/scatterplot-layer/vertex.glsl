@@ -23,8 +23,10 @@
 attribute vec3 vertices;
 attribute vec3 positions;
 attribute vec3 colors;
+attribute float radius;
+attribute vec3 pickingColors;
 
-uniform float radius;
+// uniform float radius;
 // viewport: [x, y, width, height]
 uniform vec4 viewport;
 // mapViewport: [longitude, latitude, zoom, worldSize]
@@ -34,7 +36,6 @@ uniform mat4 worldMatrix;
 uniform mat4 projectionMatrix;
 
 varying vec3 vColor;
-attribute vec3 pickingColors;
 uniform float enablePicking;
 
 const float TILE_SIZE = 512.0;
@@ -72,5 +73,6 @@ void main(void) {
   vColor = mix(colors / 255.0, pickingColors / 255.0, enablePicking);
 
   vec3 p = vec3(lnglatToScreen(positions.xy), positions.z) + vertices * radius;
+
   gl_Position = projectionMatrix * worldMatrix * vec4(p, 1.0);
 }

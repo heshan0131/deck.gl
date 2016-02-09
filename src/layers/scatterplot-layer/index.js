@@ -34,7 +34,7 @@ export default class ScatterplotLayer extends BaseMapLayer {
   constructor(opts) {
     super(opts);
     this.radius = opts.radius;
-    this.radiusChanged = opts.radius !== this.cache.radius;
+    // this.radiusChanged = opts.radius !== this.cache.radius;
 
     this.onObjectHovered = opts.onObjectHovered;
     this.onObjectClicked = opts.onObjectClicked;
@@ -46,9 +46,10 @@ export default class ScatterplotLayer extends BaseMapLayer {
       this._calculatePositions();
       this._calculateColors();
       this._calculatePickingColors();
+      this._calculateRadius();
     }
 
-    if (this.viewportChanged || this.dataChanged || this.radiusChanged) {
+    if (!this.dataChanged && this.viewportChanged) {
       this._calculateRadius();
     }
 
@@ -92,8 +93,8 @@ export default class ScatterplotLayer extends BaseMapLayer {
 
   setLayerUniforms() {
     this._uniforms = {
-      ...this._uniforms,
-      radius: this.cache.radius
+      ...this._uniforms
+      //radius: this.cache.radius
     };
   }
 
@@ -109,6 +110,11 @@ export default class ScatterplotLayer extends BaseMapLayer {
         value: this.cache.colors,
         instanced: 1,
         size: 3
+      },
+      radius: {
+        value: this.cache.radius,
+        instanced: 1,
+        size: 1
       }
     };
 
@@ -128,6 +134,7 @@ export default class ScatterplotLayer extends BaseMapLayer {
 
     this.cache.positions = new Float32Array(N * 3);
     this.cache.colors = new Float32Array(N * 3);
+    this.cache.radius = new Float32Array(N);
 
     if (!this.isPickable) {
       return;
@@ -165,11 +172,6 @@ export default class ScatterplotLayer extends BaseMapLayer {
   }
 
   _calculateRadius() {
-    // use radius if specified
-    if (this.radius && this.radius !== 0) {
-      this.cache.radius = this.radius;
-      return;
-    }
 
     const pixel0 = this.project([-122, 37.5]);
     const pixel1 = this.project([-122, 37.5002]);
@@ -179,8 +181,23 @@ export default class ScatterplotLayer extends BaseMapLayer {
 
     const dx = space0.x - space1.x;
     const dy = space0.y - space1.y;
+    const defaultRadius = Math.max(Math.sqrt(dx * dx + dy * dy), 2.0);
 
-    this.cache.radius = Math.max(Math.sqrt(dx * dx + dy * dy), 2.0);
+    this.data.forEach((point, i) => {
+
+      // use radius if specified in point
+      if (point.radius && point.radius !== 0) {
+        this.cache.radius[i] = point.radius;
+        return;
+      }
+
+      // use radius if specified in layer
+      if (this.radius && this.radius !== 0) {
+        this.cache.radius[i] = this.radius;
+        return;
+      }
+
+      this.cache.radius[i] = defaultRadius;
+    });
   }
-
 }

@@ -110,7 +110,6 @@ export default class BaseLayer {
 
       // update buffer before rendering, -> shader attributes
       onBeforeRender() {
-
         // set instanced attributes (positions, colors, pickingColors, etc.)
         Object.keys(attributes).forEach(attrKey => {
           program.use();
