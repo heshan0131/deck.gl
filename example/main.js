@@ -76,6 +76,10 @@ function loadPoints(points) {
   return {type: 'LOAD_POINTS', points};
 }
 
+function updatePointColor() {
+  return {type: 'UPDATE_POINT_COLOR'};
+}
+
 // ---- Reducer ---- //
 function reducer(state = INITIAL_STATE, action) {
   switch (action.type) {
@@ -106,7 +110,18 @@ function reducer(state = INITIAL_STATE, action) {
     return {...state, points, arcs: pointsToArcs(points)};
   }
 
-  default:
+  case 'UPDATE_POINT_COLOR':
+    const points = state.points.map(({position}) => ({
+      position,
+      color: [
+        parseInt(Math.random() * 255),
+        parseInt(Math.random() * 255),
+        parseInt(Math.random() * 255)
+      ]
+    }));
+    return {...state, points};
+
+    default:
     return state;
   }
 }
@@ -269,6 +284,12 @@ class ExampleApp extends React.Component {
     console.log('Scatterplot clicked:', info);
   }
 
+  @autobind
+  _handleUpdateColorClicked() {
+    console.log('update color clicked:');
+    this.props.dispatch(updatePointColor());
+  }
+
   _renderGridLayer() {
     const {viewport, points} = this.props;
 
@@ -322,7 +343,7 @@ class ExampleApp extends React.Component {
 
   _renderScatterplotLayer() {
     const {viewport, points} = this.props;
-
+    console.log(points[0].color);
     return new ScatterplotLayer({
       id: 'scatterplotLayer',
       width: window.innerWidth,
@@ -365,11 +386,11 @@ class ExampleApp extends React.Component {
         width={window.innerWidth}
         height={window.innerHeight}
         layers={[
-          this._renderGridLayer(),
+          // this._renderGridLayer(),
           // this._renderChoroplethLayer(),
-          this._renderHexagonLayer(),
-          this._renderScatterplotLayer(),
-          this._renderArcLayer()
+          // this._renderHexagonLayer(),
+          this._renderScatterplotLayer()
+          // this._renderArcLayer()
         ]}
       />
     );
@@ -399,6 +420,13 @@ class ExampleApp extends React.Component {
     return (
       <div>
         { this._renderMap() }
+        <div className="controls"
+             style={{position:'absolute', padding: '10px', top: '10px'}}>
+          <button
+          onClick={this._handleUpdateColorClicked}>
+            Update Point Color
+          </button>
+        </div>
       </div>
     );
   }
