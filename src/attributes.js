@@ -77,6 +77,7 @@ export default class Attributes {
 
   // Ensure all attribute buffers are updated from props or data
   update({numInstances, buffers = {}, context, data, getValue, ...opts} = {}) {
+    console.log('attribute update')
     this._checkBuffers(buffers, opts);
     this._setBuffers(buffers);
     this._allocateBuffers({numInstances});
@@ -131,6 +132,8 @@ export default class Attributes {
   }
 
   _updateBuffers({numInstances, data, getValue, context}) {
+    console.log('attribute _updateBuffers')
+
     const {attributes} = this;
 
     // If app supplied all attributes, no need to iterate over data

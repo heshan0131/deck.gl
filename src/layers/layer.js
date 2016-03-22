@@ -141,6 +141,7 @@ export default class Layer {
     if (newProps.deepCompare && !isDeepEqual(newProps.data, oldProps.data)) {
       // Support optional deep compare of data
       // Note: this is quite inefficient, app should use buffer props instead
+      console.log('deep compare, date changed')
       this.setState({dataChanged: true});
       return true;
     }
@@ -151,6 +152,7 @@ export default class Layer {
   willReceiveProps(newProps) {
     const {attributes} = this.state;
     if (this.state.dataChanged){
+      console.log('data changed, attributes invalidate all')
       attributes.invalidateAll();
     }
   }
@@ -354,10 +356,12 @@ export default class Layer {
   // Called by layer manager when existing layer is getting new props
   updateLayer(oldProps, newProps) {
     // Calculate standard change flags
+    console.log('update layer');
     this.checkProps(oldProps, newProps);
 
     // Check if any props have changed
     if (this.shouldUpdate(oldProps, newProps)) {
+      console.log('should update layer');
       if (this.state.viewportChanged) {
         this.setViewport();
       }
@@ -383,6 +387,7 @@ export default class Layer {
   calculatePickingColors(attribute, numInstances) {
     const {value, size} = attribute;
     for (let i = 0; i < numInstances; i++) {
+      // add 1 to index to seperate from no selection
       value[i * size + 0] = (i + 1) % 256;
       value[i * size + 1] = Math.floor((i + 1) / 256) % 256;
       value[i * size + 2] = Math.floor((i + 1) / 256 / 256) % 256;
@@ -392,7 +397,9 @@ export default class Layer {
   decodePickingColor(color) {
     assert(color instanceof Uint8Array);
     const [i1, i2, i3] = color;
-    const index = i1 + i2 * 256 + i3 * 65536;
+
+    // 1 was added to seperate from no selection
+    const index = i1 + i2 * 256 + i3 * 65536 - 1;
     return index;
   }
 

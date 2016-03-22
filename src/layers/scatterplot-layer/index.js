@@ -125,6 +125,7 @@ export default class ScatterplotLayer extends Layer {
   }
 
   calculateColors(attribute) {
+
     const {data} = this.props;
     const {value, size} = attribute;
     let i = 0;
