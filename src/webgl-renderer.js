@@ -128,9 +128,11 @@ export default class WebGLRenderer extends React.Component {
     // TODO - remove program parameter from scene, or move it into options
     const scene = new Scene(gl, {
       // camera,
+
+    }, camera, {
       lights: this.props.lights,
       backgroundColor: {r: 0, g: 0, b: 0, a: 0}
-    }, camera);
+    });
 
     this.setState({gl, camera, scene, events});
 
@@ -142,12 +144,12 @@ export default class WebGLRenderer extends React.Component {
   _pick(x, y) {
     const {gl, scene, camera} = this.state;
 
-    if (this._pickingFBO === undefined) {
+    //if (this._pickingFBO === undefined) {
       this._pickingFBO = new Framebuffer(gl, {
         width: gl.canvas.width,
         height: gl.canvas.height
       });
-    }
+    //}
 
     this._pickingFBO.bind();
 

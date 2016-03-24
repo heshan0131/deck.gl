@@ -279,7 +279,10 @@ class ExampleApp extends React.Component {
       latitude: viewport.latitude,
       longitude: viewport.longitude,
       zoom: viewport.zoom,
+      isPickable: true,
       opacity: 0.06,
+      unitWidth: 500,
+      unitHeight: 500,
       data: points
     });
   }
@@ -367,9 +370,9 @@ class ExampleApp extends React.Component {
         layers={[
           this._renderGridLayer(),
           // this._renderChoroplethLayer(),
-          this._renderHexagonLayer(),
-          this._renderScatterplotLayer(),
-          this._renderArcLayer()
+          // this._renderHexagonLayer(),
+          // this._renderScatterplotLayer(),
+          // this._renderArcLayer()
         ]}
       />
     );

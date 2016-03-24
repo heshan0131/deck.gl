@@ -103,6 +103,8 @@ export default class GridLayer extends Layer {
 
     const numCol = Math.ceil(width * 2 / unitWidth);
     const numRow = Math.ceil(height * 2 / unitHeight);
+    console.log(numCol);
+    console.log(numRow);
     this.setState({
       numCol,
       numRow,
@@ -134,6 +136,8 @@ export default class GridLayer extends Layer {
       value[i * size + 1] = y * unitHeight - height;
       value[i * size + 2] = 0;
     }
+
+    console.log(value);
   }
 
   calculateColors(attribute) {

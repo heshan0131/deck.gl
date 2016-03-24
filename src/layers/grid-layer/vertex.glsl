@@ -29,7 +29,7 @@ uniform float maxCount;
 uniform float opacity;
 uniform float enablePicking;
 uniform vec3 scale;
-uniform vec3 selected;
+uniform vec3 selectedPickingColor;
 
 uniform mat4 worldMatrix;
 uniform mat4 projectionMatrix;
@@ -37,8 +37,8 @@ uniform mat4 projectionMatrix;
 varying vec4 vColor;
 
 void main(void) {
-  float alpha = pickingColors == selected ? 0.3 : opacity;
-  vColor = vec4(mix(colors / maxCount, pickingColors / 255., enablePicking), alpha);
+  float alpha = pickingColors == selectedPickingColor ? 1. : 0.3;
+  vColor = vec4(mix(colors / maxCount, pickingColors / 255., 1.), alpha);
 
   vec3 p = positions + vertices * scale;
   gl_Position = projectionMatrix * worldMatrix * vec4(p, 1.0);
