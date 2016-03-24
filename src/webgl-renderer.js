@@ -124,13 +124,13 @@ export default class WebGLRenderer extends React.Component {
     // } }
 
     const camera = new PerspectiveCamera(this.props.camera);
-
+    // console.log(camera);
     // TODO - remove program parameter from scene, or move it into options
     const scene = new Scene(gl, {
-      camera,
+      // camera,
       lights: this.props.lights,
       backgroundColor: {r: 0, g: 0, b: 0, a: 0}
-    });
+    }, camera);
 
     this.setState({gl, camera, scene, events});
 
