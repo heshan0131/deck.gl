@@ -111,6 +111,7 @@ export default class Attributes {
   // Note: To reduce allocations, only grows buffers
   // Note: Only allocates buffers not set by setBuffer
   _allocateBuffers({numInstances}) {
+    console.log('allocate buffers')
     const {allocedInstances, attributes} = this;
     assert(numInstances !== undefined);
 
@@ -131,6 +132,7 @@ export default class Attributes {
   }
 
   _updateBuffers({numInstances, data, getValue, context}) {
+
     const {attributes} = this;
 
     // If app supplied all attributes, no need to iterate over data
@@ -139,6 +141,7 @@ export default class Attributes {
       const attribute = attributes[attributeName];
       const {update} = attribute;
       if (attribute.needsUpdate && attribute.autoUpdate) {
+        console.log(`${attributeName} needsUpdate`);
         if (update) {
           log(2,
             `autoupdating ${numInstances} ${attributeName} for ${this.id}`);

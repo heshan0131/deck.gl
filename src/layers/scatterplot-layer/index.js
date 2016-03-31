@@ -113,6 +113,8 @@ export default class ScatterplotLayer extends Layer {
   }
 
   calculatePositions(attribute) {
+    console.log('scatterplot calculate positions')
+
     const {data} = this.props;
     const {value, size} = attribute;
     let i = 0;
@@ -125,6 +127,7 @@ export default class ScatterplotLayer extends Layer {
   }
 
   calculateColors(attribute) {
+    console.log('scatterplot calculate colors')
     const {data} = this.props;
     const {value, size} = attribute;
     let i = 0;
@@ -137,6 +140,7 @@ export default class ScatterplotLayer extends Layer {
   }
 
   _calculateRadius() {
+    console.log('scatterplot calculate radius')
     // use radius if specified
     if (this.props.radius) {
       this.state.radius = this.props.radius;

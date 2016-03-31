@@ -91,6 +91,6 @@
     "precommit": "npm run lint -s",
     "test": "babel-node --only=deck.gl/src,deck.gl/test,luma.gl test/node.js | faucet",
     "test-browser": "budo test/browser.js:build/test-bundle.js --dir test -t babelify --live --open --port 3001 --watch-glob '**/*.{html,css,scss,js}'",
-    "start": "budo example/main.js:example/bundle.js -t babelify --live --open --port 3000 --watch-glob '**/*.{html,css,js}'"
+    "start": "MAPBOX_ACCESS_TOKEN=pk.eyJ1IjoiZ25hdnZ5IiwiYSI6ImFkMWFhOGI2ODVlZTg4MTk2YThlZjUzNzNjODc3MzA1In0.Zw_Ox2WfwWezl_5OVo1blA budo example/main.js:example/bundle.js -t babelify --live --open --port 3000 --watch-glob '**/*.{html,css,js}'"
   }
 }

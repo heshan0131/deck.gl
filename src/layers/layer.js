@@ -135,13 +135,16 @@ export default class Layer {
 
       if (newProps.data.length !== oldProps.data.length) {
         this.setState({dataChanged: true});
+        console.log('layer data changed')
       }
       return true;
     }
+
     if (newProps.deepCompare && !isDeepEqual(newProps.data, oldProps.data)) {
       // Support optional deep compare of data
       // Note: this is quite inefficient, app should use buffer props instead
       this.setState({dataChanged: true});
+      console.log('layer data changed')
       return true;
     }
     return false;
@@ -151,6 +154,7 @@ export default class Layer {
   willReceiveProps(newProps) {
     const {attributes} = this.state;
     if (this.state.dataChanged){
+      console.log('attributes invalidate all')
       attributes.invalidateAll();
     }
   }
@@ -302,6 +306,7 @@ export default class Layer {
   }
 
   updateAttributes(props) {
+    console.log('update layer attribtues');
     const {attributes} = this.state;
     const numInstances = this.getNumInstances(props);
     // Figure out data length
@@ -358,6 +363,7 @@ export default class Layer {
 
     // Check if any props have changed
     if (this.shouldUpdate(oldProps, newProps)) {
+      console.log('layer should update');
       if (this.state.viewportChanged) {
         this.setViewport();
       }
@@ -414,8 +420,7 @@ export default class Layer {
     selectedPickingColor[0] = color[0];
     selectedPickingColor[1] = color[1];
     selectedPickingColor[2] = color[2];
-    console.log(selectedPickingColor);
-    console.log(index);
+
     this.setUniforms({selectedPickingColor});
     return this.props.onHover({index, ...info});
   }

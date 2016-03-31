@@ -49,8 +49,8 @@ const MAPBOX_ACCESS_TOKEN = process.env.MAPBOX_ACCESS_TOKEN ||
 
 const INITIAL_STATE = {
   viewport: {
-    latitude: 37.751537058389985,
-    longitude: -122.42694203247012,
+    latitude: 31.251087841216645,
+    longitude: 121.3951947800511,
     zoom: 11.5
   },
   choropleths: null,
@@ -76,6 +76,9 @@ function loadPoints(points) {
   return {type: 'LOAD_POINTS', points};
 }
 
+function loadLargePoints(points) {
+  return {type: 'LOAD_LARGE_POINTS', points};
+}
 // ---- Reducer ---- //
 function reducer(state = INITIAL_STATE, action) {
   switch (action.type) {
@@ -104,6 +107,46 @@ function reducer(state = INITIAL_STATE, action) {
     });
 
     return {...state, points, arcs: pointsToArcs(points)};
+  }
+
+  case 'LOAD_LARGE_POINTS': {
+    console.log(action.points);
+    const latIdx = action.points.fields.findIndex(d => d.name === 'begintrip_lat');
+    const lngIdx = action.points.fields.findIndex(d => d.name === 'begintrip_lng');
+
+    const points = action.points.rows.map(point => {
+      return {
+        position: {
+          x: Number(point[lngIdx]),
+          y: Number(point[latIdx]),
+          z: 10
+        },
+        color: [88, 9, 124]
+      };
+    });
+
+    const arcs = action.points.rows.reduce((rows, point) => {
+
+      const lat0Idx = action.points.fields.findIndex(d => d.name === 'begintrip_lat');
+      const lng0Idx = action.points.fields.findIndex(d => d.name === 'begintrip_lng');
+      const lat1Idx = action.points.fields.findIndex(d => d.name === 'dropoff_lat');
+      const lng1Idx = action.points.fields.findIndex(d => d.name === 'dropoff_lng');
+
+      if (point[lat0Idx] && point[lat1Idx] && point[lng0Idx] && point[lng1Idx]) {
+        rows.push({
+          position: {
+            x0: point[lng0Idx], y0: point[lat0Idx],
+            x1: point[lng1Idx], y1: point[lat1Idx]
+          },
+          colors: {
+            c0: [255, 0, 0], c1: [0, 0, 255]
+          }
+        });
+      }
+
+      return rows;
+    }, []);
+    return {...state, points, arcs};
   }
 
   default:
@@ -187,7 +230,8 @@ class ExampleApp extends React.Component {
 
     this._loadJsonFile('./data/sf.zip.geo.json', this._handleChoroplethsLoaded);
     this._loadCsvFile('./data/hexagons.csv', this._handleHexagonsLoaded);
-    this._loadCsvFile('./data/sf.bike.parking.csv', this._handlePointsLoaded);
+    // this._loadCsvFile('./data/sf.bike.parking.csv', this._handlePointsLoaded);
+    this._loadJsonFile('./data/sample_data_large.json', this._handleLargePointsLoaded);
   }
 
   componentWillUnmount() {
@@ -220,6 +264,11 @@ class ExampleApp extends React.Component {
   @autobind
   _handlePointsLoaded(data) {
     this.props.dispatch(loadPoints(data));
+  }
+
+  @autobind
+  _handleLargePointsLoaded(data) {
+    this.props.dispatch(loadLargePoints(data));
   }
 
   @autobind
@@ -368,11 +417,11 @@ class ExampleApp extends React.Component {
         width={window.innerWidth}
         height={window.innerHeight}
         layers={[
-          this._renderGridLayer(),
+          // this._renderGridLayer(),
           // this._renderChoroplethLayer(),
           // this._renderHexagonLayer(),
-          // this._renderScatterplotLayer(),
-          // this._renderArcLayer()
+          this._renderScatterplotLayer(),
+          this._renderArcLayer()
         ]}
       />
     );
