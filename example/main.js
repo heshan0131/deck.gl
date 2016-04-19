@@ -82,6 +82,14 @@ function reducer(state = INITIAL_STATE, action) {
   case 'UPDATE_MAP':
     return {...state, viewport: action.viewport};
   case 'LOAD_CHOROPLETHS':
+    // add color to each feature
+    action.choropleths.features.forEach(f => {
+      f.properties.color = [
+        Math.floor(Math.random() * 256),
+        Math.floor(Math.random() * 256),
+        Math.floor(Math.random() * 256)
+      ];
+    });
     return {...state, choropleths: action.choropleths};
   case 'LOAD_HEXAGONS':
     const {hexagons} = action;
@@ -283,6 +291,10 @@ class ExampleApp extends React.Component {
     });
   }
 
+  _choroplethColorAccesor(f) {
+    return f.properties.color;
+  }
+
   _renderChoroplethLayer() {
     const {viewport, choropleths} = this.props;
     return new ChoroplethLayer({
@@ -294,6 +306,12 @@ class ExampleApp extends React.Component {
       zoom: viewport.zoom,
       data: choropleths,
       opacity: 0.8,
+      // only used when draw contour and colorAccessor is undefined
+      strokeColor: [17, 147, 154],
+      // only used when not draw contour and colorAccessor is undefined
+      fillColor: [236, 171, 32],
+      colorAccessor: this._choroplethColorAccesor,
+      strokeWidth: 1,
       isPickable: false,
       drawContour: true,
       onHover: this._handleChoroplethHovered,
@@ -364,11 +382,11 @@ class ExampleApp extends React.Component {
         width={window.innerWidth}
         height={window.innerHeight}
         layers={[
-          this._renderGridLayer(),
+          //this._renderGridLayer(),
           this._renderChoroplethLayer(),
-          this._renderHexagonLayer(),
-          this._renderScatterplotLayer(),
-          this._renderArcLayer()
+          //this._renderHexagonLayer(),
+          //this._renderScatterplotLayer(),
+          //this._renderArcLayer()
         ]}
       />
     );

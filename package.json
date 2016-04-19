@@ -14,7 +14,7 @@
     "type": "git",
     "url": "https://github.com/uber-common/deck.gl.git"
   },
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "license": "MIT",
   "browserify": {
     "transform": [
@@ -45,9 +45,10 @@
     "browserify": "^13.0.0",
     "earcut": "^2.0.6",
     "envify": "^3.4.0",
-    "glslify": "^5.0.0",
+    "extrude-polyline": "^1.0.6",
     "geojson-normalize": "0.0.1",
     "global": "^4.3.0",
+    "glslify": "^5.0.0",
     "lodash.flattendeep": "^3.0.2",
     "lodash.isequal": "^3.0.4",
     "lodash.isfunction": "^3.0.6",

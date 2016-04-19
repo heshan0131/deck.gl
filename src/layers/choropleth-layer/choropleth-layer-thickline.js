@@ -42,9 +42,9 @@ export default class ChoroplethLayer extends Layer {
    * @class
    * @param {object} props
    * @param {bool} props.drawContour - ? drawContour : drawArea
-   * @param {function} props.onChoroplethHovered - provide proerties of the
+   * @param {function} props.onChoroplethHovered - provide properties of the
    * selected choropleth, together with the mouse event when mouse hovered
-   * @param {function} props.onChoroplethClicked - provide proerties of the
+   * @param {function} props.onChoroplethClicked - provide properties of the
    * selected choropleth, together with the mouse event when mouse clicked
    */
   constructor(props) {
@@ -83,7 +83,7 @@ export default class ChoroplethLayer extends Layer {
     super.willReceiveProps(oldProps, newProps);
 
     const {dataChanged, attributeManager} = this.state;
-    if (dataChanged) {
+    if (dataChanged || oldProps.strokeWidth !== newProps.strokeWidth) {
       this.extractChoropleths();
 
       attributeManager.invalidateAll();
@@ -103,80 +103,98 @@ export default class ChoroplethLayer extends Layer {
       }),
       geometry: new Geometry({
         id: this.props.id,
-        drawMode: this.props.drawContour ? 'LINES' : 'TRIANGLES'
-        //drawMode: 'TRIANGLES'
+        //drawMode: this.props.drawContour ? 'LINES' : 'TRIANGLES'
+        drawMode: 'TRIANGLES'
       }),
       vertexCount: 0,
-      isIndexed: true,
-      onBeforeRender: () => {
-        this.oldWidth = gl.getParameter(gl.LINE_WIDTH); gl.lineWidth(3);
-      },
-      onAfterRender: () => {
-        gl.lineWidth(this.oldWidth);
-      }
-     });
+      isIndexed: true
+    });
   }
 
   calculateVertices(attribute) {
-    const vertices = flattenDeep(this.state.groupedVertices);
+
+    const vertices = this.props.drawContour ?
+      flattenDeep(this.state.meshes.map(mesh =>
+        mesh.positions.map(pos => [...pos, 100]))) :
+      flattenDeep(this.state.groupedVertices);
 
     attribute.value = new Float32Array(vertices);
   }
 
   calculateIndices(attribute) {
     // adjust index offset for multiple choropleths
-    const offsets = this.state.groupedVertices.reduce(
-      (acc, vertices) => [...acc, acc[acc.length - 1] + vertices.length],
-      [0]
-    );
+    const offsets = this.props.drawContour ?
+      this.state.meshes.reduce(
+        (acc, mesh) => [...acc, acc[acc.length - 1] + mesh.positions.length],
+        [0]
+      ) :
 
-    const indices = this.state.groupedVertices.map(
-      (vertices, choroplethIndex) => this.props.drawContour ?
-        // 1. get sequentially ordered indices of each choropleth contour
-        // 2. offset them by the number of indices in previous choropleths
-        this.calculateContourIndices(vertices.length).map(
-          index => index + offsets[choroplethIndex]
-        ) :
-        // 1. get triangulated indices for the internal areas
-        // 2. offset them by the number of indices in previous choropleths
-        earcut(flattenDeep(vertices), null, 3).map(
-          index => index + offsets[choroplethIndex]
-        )
-    );
+      this.state.groupedVertices.reduce(
+        (acc, vertices) => [...acc, acc[acc.length - 1] + vertices.length],
+        [0]
+      );
+
+    const indices = this.props.drawContour ?
+      this.state.meshes.map(
+        (mesh, choroplethIndex) => mesh.cells.map(
+          cell => cell.map(
+            index => index +  offsets[choroplethIndex]
+          )
+        )) :
+      this.state.groupedVertices.map(
+        (vertices, choroplethIndex) =>
+          earcut(flattenDeep(vertices), null, 3).map(
+            index => index + offsets[choroplethIndex]
+          )
+      );
 
     attribute.value = new Uint16Array(flattenDeep(indices));
-
     attribute.bufferType = this.state.gl.ELEMENT_ARRAY_BUFFER;
     this.state.model.setVertexCount(attribute.value.length / attribute.size);
   }
 
   calculateColors(attribute) {
     const {strokeColor, fillColor, colorAccessor} = this.props;
-    const defaultColor = this.props.drawContour ? strokeColor : fillColor;
     let vColor;
-    const colors = this.state.groupedVertices.map(
-      (vertices, i) => {
-        vColor = colorAccessor ? colorAccessor(this.state.choropleths[i])
-          : defaultColor;
-        return vertices.map(
-          vertex => vColor
-        )
-      }
-    );
+    const colors = this.props.drawContour ?
+      this.state.meshes.map(
+        (mesh, i) => {
+          vColor = colorAccessor ? colorAccessor(this.state.choropleths[i])
+            : strokeColor;
+          return mesh.positions.map(
+            p => vColor
+          )
+        }
+      ) :
+      this.state.groupedVertices.map(
+        (vertices, i) => {
+          vColor = colorAccessor ? colorAccessor(this.state.choropleths[i])
+            : fillColor;
+          return vertices.map(
+            vertex => vColor
+          )
+        }
+      );
 
     attribute.value = new Float32Array(flattenDeep(colors));
   }
 
   // Override the default picking colors calculation
   calculatePickingColors(attribute) {
-    const colors = this.state.groupedVertices.map(
-      (vertices, choroplethIndex) => vertices.map(
-        vertex => this.props.drawContour ? [-1, -1, -1] : [
-          (choroplethIndex + 1) % 256,
-          Math.floor((choroplethIndex + 1) / 256) % 256,
-          Math.floor((choroplethIndex + 1) / 256 / 256) % 256]
-      )
-    );
+    const colors = this.props.drawContour ?
+      this.state.meshes.map(
+        (mesh, i) => mesh.positions.map(
+          pos => [-1, -1, -1]
+        )
+      ) :
+      this.state.groupedVertices.map(
+        (vertices, choroplethIndex) => vertices.map(
+          vertex => [
+            (choroplethIndex + 1) % 256,
+            Math.floor((choroplethIndex + 1) / 256) % 256,
+            Math.floor((choroplethIndex + 1) / 256 / 256) % 256]
+        )
+      );
 
     attribute.value = new Float32Array(flattenDeep(colors));
   }
@@ -197,23 +215,26 @@ export default class ChoroplethLayer extends Layer {
       };
     });
 
-    this.state.groupedVertices = this.state.choropleths.map(
-      choropleth => choropleth.coordinates.map(
-        coordinate => [coordinate[0], coordinate[1], 100]
-      )
-    );
-  }
+    if (this.props.drawContour) {
+      const stroke = ExtrudePolyline({
+        thickness: 0.0001 * this.props.strokeWidth,
+        cap: 'butt',
+        join: 'bevel',
+        miterLimit: 0.005
+      });
 
-  calculateContourIndices(numVertices) {
-
-    // use vertex pairs for gl.LINES => [0, 1, 1, 2, 2, ..., n-1, n-1, 0]
-    // use vertex pairs for gl.LINES => [0, 1, 1, 2, 2, ..., n-2, n-2, n-1]
-    let indices = [];
-    for (let i = 1; i < numVertices - 2; i++) {
-      indices = [...indices, i, i];
+      this.state.meshes = this.state.choropleths.map(
+        choropleth => stroke.build(choropleth.coordinates.map(
+          coordinate => [coordinate[0], coordinate[1]]
+        ))
+      );
+    } else {
+      this.state.groupedVertices = this.state.choropleths.map(
+        choropleth => choropleth.coordinates.map(
+          coordinate => [coordinate[0], coordinate[1], 100]
+        )
+      );
     }
-    return [0, ...indices, numVertices - 1];
-
   }
 
   onHover(info) {
@@ -229,4 +250,5 @@ export default class ChoroplethLayer extends Layer {
     const feature = data.features[index];
     this.props.onClick({...info, feature});
   }
+
 }
