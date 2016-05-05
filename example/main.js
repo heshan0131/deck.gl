@@ -36,11 +36,13 @@ import request from 'd3-request';
 import {
   DeckGLOverlay,
   HexagonLayer,
-  ChoroplethLayer,
+  //ChoroplethLayer,
   ScatterplotLayer,
   ArcLayer,
   GridLayer
 } from '../src';
+
+import ChoroplethLayer from '../src/layers/choropleth-layer/choropleth-layer-thickline';
 
 // ---- Default Settings ---- //
 /* eslint-disable no-process-env */
@@ -311,7 +313,7 @@ class ExampleApp extends React.Component {
       // only used when not draw contour and colorAccessor is undefined
       fillColor: [236, 171, 32],
       colorAccessor: this._choroplethColorAccesor,
-      strokeWidth: 1,
+      strokeWidth: 5,
       isPickable: false,
       drawContour: true,
       onHover: this._handleChoroplethHovered,

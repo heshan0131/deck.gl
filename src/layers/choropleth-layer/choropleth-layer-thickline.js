@@ -52,7 +52,7 @@ export default class ChoroplethLayer extends Layer {
       opacity: 1,
       strokeColor: [0, 0, 0],
       fillColor: [128, 128, 128],
-      strokeWidth: 1,
+      strokeWidth: 3,
       colorAccessor: undefined,
       ...props
     });
